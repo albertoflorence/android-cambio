@@ -45,21 +45,35 @@
             android:id="@+id/load_currency_state"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:textSize="16sp"
             android:layout_marginBottom="16dp"
             android:gravity="center"
-            android:visibility="gone"
-            android:text="Carregando moedas..." />
+            android:text="Carregando moedas..."
+            android:textSize="16sp"
+            android:visibility="gone" />
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/select_currency_state"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:textSize="16sp"
             android:layout_marginTop="24dp"
             android:gravity="center"
-            android:visibility="gone"
-            android:text="Selecione uma moeda." />
+            android:text="Selecione uma moeda."
+            android:textSize="16sp"
+            android:visibility="gone" />
+
+        <FrameLayout
+            android:id="@+id/waiting_response_state"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone">
+
+            <com.google.android.material.progressindicator.CircularProgressIndicator
+                android:id="@+id/waiting_response_progress"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:indeterminate="true" />
+        </FrameLayout>
 
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
