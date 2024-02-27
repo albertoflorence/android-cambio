@@ -12,6 +12,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.betrybe.currencyview.R
 import com.betrybe.currencyview.common.ApiIdlingResource
 import com.betrybe.currencyview.data.api.Api
+import com.betrybe.currencyview.ui.adapters.ExchangeAdapter
+import com.betrybe.currencyview.ui.adapters.ExchangeData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -24,9 +26,13 @@ class MainActivity : AppCompatActivity() {
     private val mAutoComplete: AutoCompleteTextView by lazy { findViewById(R.id.currency_selection_input_layout) }
     private val mSelectState: TextView by lazy { findViewById(R.id.select_currency_state) }
 
+    private val api = Api.getInstance()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        mExchangeList.layoutManager = LinearLayoutManager(this)
 
         this.updateCurrencySymbols()
     }
@@ -36,7 +42,6 @@ class MainActivity : AppCompatActivity() {
             try {
                 ApiIdlingResource.increment()
                 withContext(Dispatchers.Main) {
-                    val api = Api.getInstance()
                     val response = api.getSymbols()
                     if (response.isSuccessful) {
                         val exchangeData = response.body() ?: return@withContext
@@ -47,7 +52,36 @@ class MainActivity : AppCompatActivity() {
                         )
                         mAutoComplete.setAdapter(adapter)
                         mSelectState.visibility = View.VISIBLE
+
+                        mAutoComplete.setOnItemClickListener { parent, _, position, _ ->
+                            val base = parent.getItemAtPosition(position).toString()
+                            updateLatest(base)
+                            mSelectState.visibility = View.GONE
+                        }
                     }
+                }
+                ApiIdlingResource.decrement()
+            } catch (ex: Exception) {
+                ApiIdlingResource.decrement()
+                Log.e("Error", ex.toString())
+            }
+        }
+    }
+
+    private fun updateLatest(base: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                ApiIdlingResource.increment()
+                withContext(Dispatchers.Main) {
+                    val response = api.getLatestRates(base).body() ?: return@withContext
+                    val exchangeList = response.rates.map {
+                        object : ExchangeData {
+                            override val title: String = it.key
+                            override val rate: Double = it.value
+                        }
+                    }
+                    mExchangeList.adapter = ExchangeAdapter(exchangeList)
+                    mExchangeList.visibility = View.VISIBLE
                 }
                 ApiIdlingResource.decrement()
             } catch (ex: Exception) {
